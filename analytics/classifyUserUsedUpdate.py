@@ -11,6 +11,8 @@ from sklearn.neighbors import KNeighborsClassifier
 import sys
 
 from helperClasses import *
+
+import pickle
 #
 # Desc char:
 # 0.840067340067
@@ -124,12 +126,14 @@ def run_model_all(X_train, y_train, pipeline, inputFile,  outputFile, parameterO
     print(xall)
     print(yall)
     model = pipeline.fit(xall,yall.values.ravel())
+    with open('model.pickle','wb') as f:
+        pickle.dump(model,f)
     X_train, X_test, y_train, y_true = train_test_split(xall, yall)
     y_test = model.predict(X_test)          # apply the model to the test data
     score = accuracy_score(y_test, y_true)
     print('score',score)
-    bDataFrame[parameterOut] = bTest.tolist()
-    bDataFrame.to_csv(outputFile, mode='a',header=False, sep=',', index=False)
+    #bDataFrame[parameterOut] = bTest.tolist()
+    #bDataFrame.to_csv(outputFile, mode='a',header=False, sep=',', index=False)
 
 def run_model_top(X_train, y_train, pipeline, inputFile,  outputFile, parameterOut):
     bDataFrame = pd.read_csv(inputFile).fillna('')
@@ -153,12 +157,15 @@ def run_model_top(X_train, y_train, pipeline, inputFile,  outputFile, parameterO
     print(xall)
     print(yall)
     model = pipeline.fit(xall,yall.values.ravel())
+    with open('model.pickle','wb') as f:
+        pickle.dump(model,f)
+    model = pipeline.fit(xall,yall.values.ravel())
     X_train, X_test, y_train, y_true = train_test_split(xall, yall)
     y_test = model.predict(X_test)          # apply the model to the test data
     score = accuracy_score(y_test, y_true)
     print('score',score)
-    bDataFrame[parameterOut] = bTest.tolist()
-    bDataFrame.to_csv(outputFile, mode='a',header=False, sep=',', index=False)
+    #bDataFrame[parameterOut] = bTest.tolist()
+    #bDataFrame.to_csv(outputFile, mode='a',header=False, sep=',', index=False)
 
 
 def self_training(X_train, y_train, pipeline, inputFile,parameterOut,type):
