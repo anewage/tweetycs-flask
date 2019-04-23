@@ -6,7 +6,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, \
 
 import tweepy
 import pymongo
-import faust
+import json
 
 
 # public_tweets = api.home_timeline()
@@ -107,6 +107,12 @@ async_mode = None
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
+with open('config/config.json') as json_file:
+    obj = json.loads(json_file.read())
+    app.config['consumer_key'] = obj['consumer_key']
+    app.config['consumer_secret'] = obj['consumer_secret']
+    app.config['access_token'] = obj['access_token']
+    app.config['access_token_secret'] = obj['access_token_secret']
 socketio = SocketIO(app, async_mode=async_mode)
 thread = None
 thread_lock = Lock()
@@ -216,12 +222,10 @@ if __name__ == '__main__':
     mydb = myclient["tweetSense"]
     mycol = mydb["tweets"]
 
-    consumer_key = "Twpe1G9ImNRKSrqHrBrjmybOx"
-    consumer_secret = "xgXksq11ncSZCMJfE6qcMPbzCliXHfTRvkMK3halPDpadfmAsL"
-    access_token = "563293530-2JwNmatiH4vlGLjLLG8529vH4y62OV7LPq3HugDr"
-    access_token_secret = "vfp3VMgyQQEzNnc1MqaAJ6MMokcv1HiHhlbZWuv1hjgju"
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
+    print(app.config.get('twitter'))
+
+    auth = tweepy.OAuthHandler(app.config['consumer_key'], app.config['consumer_secret'])
+    auth.set_access_token(app.config['access_token'], app.config['access_token_secret'])
     api = tweepy.API(auth)
     stream_listener = MyStreamListener()
     stream = tweepy.Stream(auth=api.auth, listener=stream_listener)
