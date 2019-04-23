@@ -1,0 +1,229 @@
+#!/usr/bin/env python
+from threading import Lock
+from flask import Flask, render_template, session, request
+from flask_socketio import SocketIO, emit, join_room, leave_room, \
+    close_room, rooms, disconnect
+
+import tweepy
+import pymongo
+import faust
+
+
+# public_tweets = api.home_timeline()
+# for tweet in public_tweets:
+#     print(tweet.text)
+
+keywords = ['abortion',
+'alcohol use disorders',
+'alzheimer',
+'aortic aneurysm',
+'asthma',
+'atrial fibrillation',
+'atrial flutter',
+'bile duct disease',
+'biliary tract cancer',
+'bladder cancer',
+'brain cancer',
+'breast cancer',
+'bronchitis',
+'cardiomyopathy',
+'cervical cancer',
+'chagas',
+'chikungunya',
+'chronic obstructive pulmonary disease',
+'colon cancer',
+'congenital anomalies',
+'dengue',
+'diabetes',
+'diarrhea diseases',
+'diffuse parenchymal lung disease',
+'drowning',
+'drug overdose',
+'earthquake death',
+'ebola',
+'encephalitis',
+'endocarditis',
+'epilepsy',
+'esophageal cancer',
+'falls',
+'fire death',
+'gall bladder',
+'gallbladder cancer',
+'glomerulonephritis',
+'gout',
+'heat death',
+'hemorrhagic stroke',
+'hepatitis',
+'hiv',
+'aids',
+'hurricane death',
+'hypertensive heart disease',
+'influenza',
+'interpersonal violence',
+'intestinal ischemic syndrome',
+'intestinal obstruction',
+'malaria',
+'male infertility',
+'maternal hemorrhage',
+'measles',
+'medical treatment adverse effect',
+'meningitis',
+'migraine',
+'mouth cancer',
+'multiple myeloma',
+'multiple sclerosis',
+'myocarditis',
+'nasopharyngeal cancer',
+'neck pain',
+'neonatal encephalopathy',
+'nervous system cancer',
+'non-hodgkin lymphoma',
+'oropharyngeal cancer',
+'osteoarthritis',
+'ovarian cancer',
+'pancreatic cancer',
+'pancreatitis',
+'paralytic ileus',
+'parkinsons disease']
+
+#override tweepy.StreamListener to add logic to on_status
+class MyStreamListener(tweepy.StreamListener):
+    def __init__(self):
+        super().__init__()
+        self._tweetCount = 0
+
+    def on_status(self, status):
+        socketio.emit('hello', {'data': 'Tweet #' + str(self._tweetCount) + status.text}, namespace='/test')
+        self._tweetCount += 1
+        # x = mycol.insert_one(status._json)
+        # print list of the _id values of the inserted documents:
+        # print(x)
+
+
+# Set this variable to "threading", "eventlet" or "gevent" to test the
+# different async modes, or leave it set to None for the application to choose
+# the best option based on installed packages.
+async_mode = None
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app, async_mode=async_mode)
+thread = None
+thread_lock = Lock()
+
+
+def background_thread():
+    """Example of how to send server generated events to clients."""
+    count = 0
+    while True:
+        socketio.sleep(10)
+        count += 1
+        socketio.emit('my_response',
+                      {'data': 'Server generated event', 'count': count},
+                      namespace='/test')
+
+
+@app.route('/')
+def index():
+    return render_template('index.html', async_mode=socketio.async_mode)
+
+@app.route('/hello')
+def hello():
+    socketio.emit('hello', {'data': 'hello_doobs_doobs'}, namespace='/test')
+    print('DONE! SENT HELLO!')
+    return "DONE!"
+
+
+@socketio.on('my_event', namespace='/test')
+def test_message(message):
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': message['data'], 'count': session['receive_count']})
+
+
+@socketio.on('my_broadcast_event', namespace='/test')
+def test_broadcast_message(message):
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': message['data'], 'count': session['receive_count']},
+         broadcast=True)
+
+
+@socketio.on('join', namespace='/test')
+def join(message):
+    join_room(message['room'])
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': 'In rooms: ' + ', '.join(rooms()),
+          'count': session['receive_count']})
+
+
+@socketio.on('leave', namespace='/test')
+def leave(message):
+    leave_room(message['room'])
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': 'In rooms: ' + ', '.join(rooms()),
+          'count': session['receive_count']})
+
+
+@socketio.on('close_room', namespace='/test')
+def close(message):
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response', {'data': 'Room ' + message['room'] + ' is closing.',
+                         'count': session['receive_count']},
+         room=message['room'])
+    close_room(message['room'])
+
+
+@socketio.on('my_room_event', namespace='/test')
+def send_room_message(message):
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': message['data'], 'count': session['receive_count']},
+         room=message['room'])
+
+
+@socketio.on('disconnect_request', namespace='/test')
+def disconnect_request():
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': 'Disconnected!', 'count': session['receive_count']})
+    disconnect()
+
+
+@socketio.on('my_ping', namespace='/test')
+def ping_pong():
+    emit('my_pong')
+
+
+@socketio.on('connect', namespace='/test')
+def test_connect():
+    global thread
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(background_thread)
+    emit('my_response', {'data': 'Connected', 'count': 0})
+
+
+@socketio.on('disconnect', namespace='/test')
+def test_disconnect():
+    print('Client disconnected', request.sid)
+
+
+if __name__ == '__main__':
+    myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+    mydb = myclient["tweetSense"]
+    mycol = mydb["tweets"]
+
+    consumer_key = "Twpe1G9ImNRKSrqHrBrjmybOx"
+    consumer_secret = "xgXksq11ncSZCMJfE6qcMPbzCliXHfTRvkMK3halPDpadfmAsL"
+    access_token = "563293530-2JwNmatiH4vlGLjLLG8529vH4y62OV7LPq3HugDr"
+    access_token_secret = "vfp3VMgyQQEzNnc1MqaAJ6MMokcv1HiHhlbZWuv1hjgju"
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+    auth.set_access_token(access_token, access_token_secret)
+    api = tweepy.API(auth)
+    stream_listener = MyStreamListener()
+    stream = tweepy.Stream(auth=api.auth, listener=stream_listener)
+    stream.filter(track=keywords, is_async=True)
+    socketio.run(app, debug=False)
