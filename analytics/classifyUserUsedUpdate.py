@@ -8,6 +8,7 @@ from sklearn.svm import LinearSVC
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
+import sys
 
 from helperClasses import *
 #
@@ -28,13 +29,7 @@ from helperClasses import *
 # 0.855572005384
 
 
-trainsource='CombinedTaggedTweets.csv'
-df = pd.read_csv(trainsource)
-df = df.fillna('')
-train_test_set = df.sample(frac=0.99, random_state=100)
-parameterIn = ['user_description', 'user_verified', 'user_screen_name', 'influence_ratio']
-X = train_test_set[ parameterIn ]
-y = train_test_set['user_category']
+
 
 #vect = CountVectorizer(ngram_range=(1,6), analyzer='char')                                                            
 #clf =  RandomForestClassifier()
@@ -85,16 +80,16 @@ def KNN():
 
 
 
-vect = CountVectorizer(ngram_range=(1,6), analyzer='char')                                                            
-svm = LinearSVC()
-clf = CalibratedClassifierCV(svm) 
-pipeline = Pipeline([
-    ('name_extractor', TextExtractor('user_description')),  # extract names from df
-    ('vect', vect),  # extract ngrams from roadnames
-    ('tfidf', TfidfTransformer() ),
-    ('clf' , clf),   # feed the output through a classifier
-])
-print('Tfidf: ')
+# vect = CountVectorizer(ngram_range=(1,6), analyzer='char')                                                            
+# svm = LinearSVC()
+# clf = CalibratedClassifierCV(svm) 
+# pipeline = Pipeline([
+#     ('name_extractor', TextExtractor('user_description')),  # extract names from df
+#     ('vect', vect),  # extract ngrams from roadnames
+#     ('tfidf', TfidfTransformer() ),
+#     ('clf' , clf),   # feed the output through a classifier
+# ])
+# print('Tfidf: ')
 
 def run_experiment(X, y, pipeline, num_expts=10):
     scores = list()
@@ -166,8 +161,11 @@ def run_model_top(X_train, y_train, pipeline, inputFile,  outputFile, parameterO
     #bDataFrame.to_csv(outputFile, mode='a',header=False, sep=',', index=False)
 
 
-def self_training(X_train, y_train, pipeline, inputFile,parameterOut):
-    run_model_top(X_train, y_train, pipeline,inputFile,trainsource, parameterOut)
+def self_training(X_train, y_train, pipeline, inputFile,parameterOut,type):
+    if type =='all':
+        run_model_all(X_train, y_train, pipeline,inputFile,trainsource, parameterOut)
+    if type =='top':
+        run_model_top(X_train, y_train, pipeline,inputFile,trainsource, parameterOut)
 
 
 def predict(X_train, y_train,inputFile, outputFile, parameterOut):
@@ -177,8 +175,29 @@ def predict(X_train, y_train,inputFile, outputFile, parameterOut):
     bDataFrame[parameterOut] = bTest.tolist()
     bDataFrame.to_csv(outputFile, mode='a',header=False)
 
-
-#run_model(X, y, pipeline, 'dataCombined.csv',  'dataCombinedUserLabelled.csv', 'user_category' )
-self_training(X, y, pipeline, 'CombinedTaggedTweets.csv', 'user_category' )
+if __name__ == '__main__':
+    trainsource=sys.argv[1]
+    test=sys.argv[2]
+    df = pd.read_csv(trainsource)
+    df = df.fillna('')
+    train_test_set = df.sample(frac=0.99, random_state=100)
+    parameterIn = ['user_description', 'user_verified', 'user_screen_name', 'influence_ratio']
+    X = train_test_set[ parameterIn ]
+    y = train_test_set['user_category']
+    classifier= sys.argv[3]
+    if classifier =='s':
+        pipeline =SVM()
+    if classifier =='r':
+        pipeline =randomForest()
+    if classifier =='k':
+        pipeline=KNN()
+    type = sys.argv[4]
+    if type == 't':
+        self_training(X, y, pipeline, test, 'user_category','top')
+    if type == 'a':
+        self_training(X, y, pipeline, test, 'user_category','all')
+        
+    #run_model(X, y, pipeline, 'dataCombined.csv',  'dataCombinedUserLabelled.csv', 'user_category' )
+    
 
 
