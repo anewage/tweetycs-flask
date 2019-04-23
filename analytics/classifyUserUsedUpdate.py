@@ -128,8 +128,8 @@ def run_model_all(X_train, y_train, pipeline, inputFile,  outputFile, parameterO
     y_test = model.predict(X_test)          # apply the model to the test data
     score = accuracy_score(y_test, y_true)
     print('score',score)
-    #bDataFrame[parameterOut] = bTest.tolist()
-    #bDataFrame.to_csv(outputFile, mode='a',header=False, sep=',', index=False)
+    bDataFrame[parameterOut] = bTest.tolist()
+    bDataFrame.to_csv(outputFile, mode='a',header=False, sep=',', index=False)
 
 def run_model_top(X_train, y_train, pipeline, inputFile,  outputFile, parameterOut):
     bDataFrame = pd.read_csv(inputFile).fillna('')
@@ -157,8 +157,8 @@ def run_model_top(X_train, y_train, pipeline, inputFile,  outputFile, parameterO
     y_test = model.predict(X_test)          # apply the model to the test data
     score = accuracy_score(y_test, y_true)
     print('score',score)
-    #bDataFrame[parameterOut] = bTest.tolist()
-    #bDataFrame.to_csv(outputFile, mode='a',header=False, sep=',', index=False)
+    bDataFrame[parameterOut] = bTest.tolist()
+    bDataFrame.to_csv(outputFile, mode='a',header=False, sep=',', index=False)
 
 
 def self_training(X_train, y_train, pipeline, inputFile,parameterOut,type):
@@ -196,7 +196,7 @@ if __name__ == '__main__':
         self_training(X, y, pipeline, test, 'user_category','top')
     if type == 'a':
         self_training(X, y, pipeline, test, 'user_category','all')
-        
+
     #run_model(X, y, pipeline, 'dataCombined.csv',  'dataCombinedUserLabelled.csv', 'user_category' )
     
 
