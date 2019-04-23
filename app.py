@@ -3,90 +3,13 @@ from threading import Lock
 from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
-
+from config import loader
 import tweepy
 import pymongo
 import json
 
 
-# public_tweets = api.home_timeline()
-# for tweet in public_tweets:
-#     print(tweet.text)
-
-keywords = ['abortion',
-'alcohol use disorders',
-'alzheimer',
-'aortic aneurysm',
-'asthma',
-'atrial fibrillation',
-'atrial flutter',
-'bile duct disease',
-'biliary tract cancer',
-'bladder cancer',
-'brain cancer',
-'breast cancer',
-'bronchitis',
-'cardiomyopathy',
-'cervical cancer',
-'chagas',
-'chikungunya',
-'chronic obstructive pulmonary disease',
-'colon cancer',
-'congenital anomalies',
-'dengue',
-'diabetes',
-'diarrhea diseases',
-'diffuse parenchymal lung disease',
-'drowning',
-'drug overdose',
-'earthquake death',
-'ebola',
-'encephalitis',
-'endocarditis',
-'epilepsy',
-'esophageal cancer',
-'falls',
-'fire death',
-'gall bladder',
-'gallbladder cancer',
-'glomerulonephritis',
-'gout',
-'heat death',
-'hemorrhagic stroke',
-'hepatitis',
-'hiv',
-'aids',
-'hurricane death',
-'hypertensive heart disease',
-'influenza',
-'interpersonal violence',
-'intestinal ischemic syndrome',
-'intestinal obstruction',
-'malaria',
-'male infertility',
-'maternal hemorrhage',
-'measles',
-'medical treatment adverse effect',
-'meningitis',
-'migraine',
-'mouth cancer',
-'multiple myeloma',
-'multiple sclerosis',
-'myocarditis',
-'nasopharyngeal cancer',
-'neck pain',
-'neonatal encephalopathy',
-'nervous system cancer',
-'non-hodgkin lymphoma',
-'oropharyngeal cancer',
-'osteoarthritis',
-'ovarian cancer',
-'pancreatic cancer',
-'pancreatitis',
-'paralytic ileus',
-'parkinsons disease']
-
-#override tweepy.StreamListener to add logic to on_status
+# Override tweepy.StreamListener to add logic to on_status
 class MyStreamListener(tweepy.StreamListener):
     def __init__(self):
         super().__init__()
@@ -95,10 +18,6 @@ class MyStreamListener(tweepy.StreamListener):
     def on_status(self, status):
         socketio.emit('hello', {'data': 'Tweet #' + str(self._tweetCount) + status.text}, namespace='/test')
         self._tweetCount += 1
-        # x = mycol.insert_one(status._json)
-        # print list of the _id values of the inserted documents:
-        # print(x)
-
 
 # Set this variable to "threading", "eventlet" or "gevent" to test the
 # different async modes, or leave it set to None for the application to choose
@@ -107,12 +26,7 @@ async_mode = None
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-with open('config/config.json') as json_file:
-    obj = json.loads(json_file.read())
-    app.config['consumer_key'] = obj['consumer_key']
-    app.config['consumer_secret'] = obj['consumer_secret']
-    app.config['access_token'] = obj['access_token']
-    app.config['access_token_secret'] = obj['access_token_secret']
+app = loader.load_config(app)
 socketio = SocketIO(app, async_mode=async_mode)
 thread = None
 thread_lock = Lock()
@@ -132,6 +46,7 @@ def background_thread():
 @app.route('/')
 def index():
     return render_template('index.html', async_mode=socketio.async_mode)
+
 
 @app.route('/hello')
 def hello():
@@ -229,5 +144,5 @@ if __name__ == '__main__':
     api = tweepy.API(auth)
     stream_listener = MyStreamListener()
     stream = tweepy.Stream(auth=api.auth, listener=stream_listener)
-    stream.filter(track=keywords, is_async=True)
+    stream.filter(track=app.config['keywords'], is_async=True)
     socketio.run(app, debug=False)
