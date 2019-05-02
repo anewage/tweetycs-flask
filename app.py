@@ -5,8 +5,10 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
 from config import loader
 import tweepy
-import pymongo
+from flask_pymongo import PyMongo
 import json
+import datetime
+from bson.objectid import ObjectId
 
 
 # Override tweepy.StreamListener to add logic to on_status
@@ -17,19 +19,44 @@ class MyStreamListener(tweepy.StreamListener):
 
     def on_status(self, status):
         socketio.emit('hello', {'data': 'Tweet #' + str(self._tweetCount) + status.text}, namespace='/test')
-        self._tweetCount += 1
+        u = mongo.db.users.find_one({"screen_name": status._json['user']['screen_name']})
+        if u is None:
+            mongo.db.users.save(status._json['user'])
+        mongo.db.tweets.save(status._json)
+        self._tweetCount = self._tweetCount + 1
+        print(self._tweetCount)
 
+
+class JSONEncoder(json.JSONEncoder):
+    ''' extend json-encoder class'''
+
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        if isinstance(o, datetime.datetime):
+            return str(o)
+        return json.JSONEncoder.default(self, o)
+
+
+# FLASK, Config and DB
+app = Flask(__name__)
+app = loader.load_config(app)
+app.json_encoder = JSONEncoder
+mongo = PyMongo(app)
+
+# SOCKET IO
 # Set this variable to "threading", "eventlet" or "gevent" to test the
 # different async modes, or leave it set to None for the application to choose
 # the best option based on installed packages.
 async_mode = None
-
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
-app = loader.load_config(app)
 socketio = SocketIO(app, async_mode=async_mode)
 thread = None
 thread_lock = Lock()
+
+# Tweepy
+auth = tweepy.OAuthHandler(app.config['consumer_key'], app.config['consumer_secret'])
+auth.set_access_token(app.config['access_token'], app.config['access_token_secret'])
+api = tweepy.API(auth)
 
 
 def background_thread():
@@ -85,7 +112,7 @@ def leave(message):
     session['receive_count'] = session.get('receive_count', 0) + 1
     emit('my_response',
          {'data': 'In rooms: ' + ', '.join(rooms()),
-          'count': session['receive_count']})
+          'coufrom app import *nt': session['receive_count']})
 
 
 @socketio.on('close_room', namespace='/test')
@@ -132,17 +159,6 @@ def test_disconnect():
     print('Client disconnected', request.sid)
 
 
-if __name__ == '__main__':
-    myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-    mydb = myclient["tweetSense"]
-    mycol = mydb["tweets"]
-
-    print(app.config.get('twitter'))
-
-    auth = tweepy.OAuthHandler(app.config['consumer_key'], app.config['consumer_secret'])
-    auth.set_access_token(app.config['access_token'], app.config['access_token_secret'])
-    api = tweepy.API(auth)
-    stream_listener = MyStreamListener()
-    stream = tweepy.Stream(auth=api.auth, listener=stream_listener)
-    stream.filter(track=app.config['keywords'], is_async=True)
-    socketio.run(app, debug=False)
+stream = tweepy.Stream(auth=api.auth, listener=MyStreamListener())
+stream.filter(track=app.config['keywords'], languages=["en"], is_async=True)
+socketio.run(app, debug=False)
