@@ -8,24 +8,29 @@ import tweepy
 from flask_pymongo import PyMongo
 import json
 import datetime
+import random
 from bson.objectid import ObjectId
 
 
 # Override tweepy.StreamListener to add logic to on_status
-class MyStreamListener(tweepy.StreamListener):
-    def __init__(self):
+class StreamProcessor(tweepy.StreamListener):
+    def __init__(self, tweepy, socketio):
         super().__init__()
         self._tweetCount = 0
+        self._tweepy = tweepy,
+        self._socketio = socketio
 
     def on_status(self, status):
-        socketio.emit('hello', {'data': 'Tweet #' + str(self._tweetCount) + status.text}, namespace='/test')
-        u = mongo.db.users.find_one({"screen_name": status._json['user']['screen_name']})
-        if u is None:
-            mongo.db.users.save(status._json['user'])
-        mongo.db.tweets.save(status._json)
+        data = status._json
+        # themes = ['fund', 'edu', 'awareness']
+        data['sentiment'] = random.uniform(-1, 1)
+        self._socketio.emit('hello', {'number': str(self._tweetCount), 'tweet': json.dumps(data)}, namespace='/test')
+        # u = mongo.db.users.find_one({"screen_name": status._json['user']['screen_name']})
+        # if u is None:
+        #     mongo.db.users.insert_one(status._json['user'])
+        # mongo.db.tweets.insert_one(status._json)
         self._tweetCount = self._tweetCount + 1
         print(self._tweetCount)
-
 
 class JSONEncoder(json.JSONEncoder):
     ''' extend json-encoder class'''
@@ -48,7 +53,7 @@ mongo = PyMongo(app)
 # Set this variable to "threading", "eventlet" or "gevent" to test the
 # different async modes, or leave it set to None for the application to choose
 # the best option based on installed packages.
-async_mode = None
+async_mode = "threading"
 socketio = SocketIO(app, async_mode=async_mode)
 thread = None
 thread_lock = Lock()
@@ -72,7 +77,11 @@ def background_thread():
 
 @app.route('/')
 def index():
-    return render_template('index.html', async_mode=socketio.async_mode)
+    return render_template('index2.html', async_mode=socketio.async_mode)
+
+@app.route('/hi')
+def hi():
+    return render_template('sample.html', async_mode=socketio.async_mode)
 
 
 @app.route('/hello')
@@ -159,6 +168,6 @@ def test_disconnect():
     print('Client disconnected', request.sid)
 
 
-stream = tweepy.Stream(auth=api.auth, listener=MyStreamListener())
+stream = tweepy.Stream(auth=api.auth, listener=StreamProcessor(api, socketio))
 stream.filter(track=app.config['keywords'], languages=["en"], is_async=True)
 socketio.run(app, debug=False)
