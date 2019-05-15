@@ -6,7 +6,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.svm import LinearSVC
 
-from helperClasses import *
+from analytics.helperClasses import *
 #
 # Desc char:
 # 0.840067340067
@@ -76,7 +76,6 @@ def self_training(X_train, y_train, pipeline, inputFile,parameterOut):
 
 
 def predict(X_train, y_train,inputFile, outputFile, parameterOut):
-
     bDataFrame = pd.read_csv(inputFile).fillna('')
     bTest = model.predict(X_test)  # apply the model to the test data
     bDataFrame[parameterOut] = bTest.tolist()
