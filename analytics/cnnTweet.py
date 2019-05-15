@@ -151,6 +151,7 @@ if __name__ == '__main__':
         checkpoint = ModelCheckpoint(filepath, monitor="val_acc", verbose=1, save_best_only=True, mode='max')
         reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, min_lr=0.000001)
         model.fit(tweets, labels, batch_size=32, epochs=8, validation_split=0.1, shuffle=True, callbacks=[checkpoint, reduce_lr])
+        print(model.summary())
     else:
         model = load_model("4cnnTweet.hdf5")
         TEST_PROCESSED_FILE = sys.argv[1]
@@ -162,7 +163,3 @@ if __name__ == '__main__':
         mDataFrame=pd.read_csv(TEST_PROCESSED_FILE).fillna('')
         mDataFrame['new']=le.inverse_transform(results)
         mDataFrame.to_csv(TEST_PROCESSED_FILE)
-
-
-        #results = zip(map(str, range(len(test_tweets))),  np.round(predictions[:, 0]).astype(int))
-        #save_results_to_csv(results, 'cnn.csv')
