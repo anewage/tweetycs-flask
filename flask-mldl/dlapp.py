@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import request
+from flask import request,jsonify
 import pandas as pd 
 import numpy as np 
 import pickle
@@ -100,15 +100,17 @@ def CNNuser():
 	model = load_model("4cnnUser.hdf5")
 
 	#modify it for the data stream
-	text="hi how are you"
+	data=request.get_json(force=True)
+	text=data['user']
 	test_tweets=process_description(text)
 	test_tweets = pad_sequences(test_tweets, maxlen=max_length, padding='post')
 	predictions = model.predict(test_tweets, batch_size=128, verbose=1)
 	results =  np.argmax(predictions, axis=1).astype(int)
 	le = preprocessing.LabelEncoder()
 	le.fit(["public","interest groups","media","businesses","celebrities","official agencies"])
-	result=str(le.inverse_transform(results))
-	return result
+	result=le.inverse_transform(results)
+	result=result[0]
+	return jsonify(group=result)
 
 @app.route('/cnntweet', methods=['GET','POST'])
 def CNNtweet():
@@ -116,15 +118,17 @@ def CNNtweet():
 	model = load_model("4cnnTweet.hdf5")
 	max_length = 140
 	#modify it for the data stream
-	text="hi how are you"
+	data=request.get_json(force=True)
+	text=data['text']
 	test_tweets=process_tweet(text)
 	test_tweets = pad_sequences(test_tweets, maxlen=max_length, padding='post')
 	predictions = model.predict(test_tweets, batch_size=128, verbose=1)
 	results =  np.argmax(predictions, axis=1).astype(int)
 	le = preprocessing.LabelEncoder()
 	le.fit(["educational", "personal", "unrelated", "promotional","fundraising"])
-	result=str(le.inverse_transform(results))
-	return result
+	result=le.inverse_transform(results)
+	result=result[0]
+	return jsonify(theme=result)
 
 @app.route('/lstmuser', methods=['GET','POST'])
 def LSTMuser():
@@ -133,15 +137,17 @@ def LSTMuser():
 	model = load_model("LstmUser.hdf5")
 
 	#modify it for the data stream
-	text="hi how are you"
+	data=request.get_json(force=True)
+	text=data['user']
 	test_tweets=process_description(text)
 	test_tweets = pad_sequences(test_tweets, maxlen=max_length, padding='post')
 	predictions = model.predict(test_tweets, batch_size=128, verbose=1)
 	results =  np.argmax(predictions, axis=1).astype(int)
 	le = preprocessing.LabelEncoder()
 	le.fit(["public","interest groups","media","businesses","celebrities","official agencies"])
-	result=str(le.inverse_transform(results))
-	return result
+	result=le.inverse_transform(results)
+	result=result[0]
+	return jsonify(group=result)
 
 @app.route('/lstmtweet', methods=['GET','POST'])
 def lstmtweet():
@@ -150,15 +156,17 @@ def lstmtweet():
 	model = load_model("LstmTweet.hdf5")
 
 	#modify it for the data stream
-	text="hi how are you"
+	data=request.get_json(force=True)
+	text=data['text']
 	test_tweets=process_tweet(text)
 	test_tweets = pad_sequences(test_tweets, maxlen=max_length, padding='post')
 	predictions = model.predict(test_tweets, batch_size=128, verbose=1)
 	results =  np.argmax(predictions, axis=1).astype(int)
 	le = preprocessing.LabelEncoder()
 	le.fit(["educational", "personal", "unrelated", "promotional","fundraising"])
-	result=str(le.inverse_transform(results))
-	return result
+	result=le.inverse_transform(results)
+	result=result[0]
+	return jsonify(theme=result)
 
 
 if __name__ == '__main__':
