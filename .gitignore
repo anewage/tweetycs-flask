@@ -8,5 +8,6 @@ __pycache__/
 .idea/
 
 # Models and Data
-models/**
-data/**
+models/*.hdf5
+models/*.pickle
+data/*.csv
