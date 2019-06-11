@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 @app.route('/svmtweet', methods=['GET','POST'])
 def SVMtweet():
-	model = open("SVMTweetOnly.pickle","rb")
+	model = open("model/SVMtweetOnly.pickle","rb")
 	clf = pickle.load(model)
 	data=request.get_json(force=True)
 	df = pd.DataFrame.from_dict(json_normalize(data))
@@ -27,7 +27,7 @@ def SVMtweet():
 
 @app.route('/svmuser', methods=['GET','POST'])
 def SVMuser():
-	model = open("SVMUserOnly.pickle","rb")
+	model = open("model/SVMUserOnly.pickle","rb")
 	clf = pickle.load(model)
 	#modify it for the data stream
 	data=request.get_json(force=True)
@@ -41,7 +41,7 @@ def SVMuser():
 
 @app.route('/knnuser', methods=['GET','POST'])
 def KNNuser():
-	model = open("KNNUserOnly.pickle","rb")
+	model = open("model/KNNUserOnly.pickle","rb")
 	clf = pickle.load(model)
 	#modify it for the data stream
 	data=request.get_json(force=True)
@@ -55,7 +55,7 @@ def KNNuser():
 
 @app.route('/knntweet', methods=['GET','POST'])
 def KNNtweet():
-	model = open("KNNTweetOnly.pickle","rb")
+	model = open("model/KNNTweetOnly.pickle","rb")
 	clf = pickle.load(model)
 	data=request.get_json(force=True)
 	df = pd.DataFrame.from_dict(json_normalize(data))
@@ -70,7 +70,7 @@ def KNNtweet():
 
 @app.route('/rfuser', methods=['GET','POST'])
 def RFuser():
-	model = open("RFUserOnly.pickle","rb")
+	model = open("model/RFUserOnly.pickle","rb")
 	clf = pickle.load(model)
 	#modify it for the data stream
 	data=request.get_json(force=True)
@@ -84,7 +84,7 @@ def RFuser():
 
 @app.route('/rftweet', methods=['GET','POST'])
 def RFtweet():
-	model = open("RFTweetOnly.pickle","rb")
+	model = open("model/RFTweetOnly.pickle","rb")
 	clf = pickle.load(model)
 	data=request.get_json(force=True)
 	df = pd.DataFrame.from_dict(json_normalize(data))
@@ -99,7 +99,7 @@ def RFtweet():
 
 @app.route('/mlpuser', methods=['GET','POST'])
 def MLPuser():
-	model = open("MLPUserOnly.pickle","rb")
+	model = open("model/MLPUserOnly.pickle","rb")
 	clf = pickle.load(model)
 	#modify it for the data stream
 	data=request.get_json(force=True)
