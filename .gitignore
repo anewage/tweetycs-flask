@@ -1,8 +1,12 @@
+# Virtual Environment
 venv/
 
+# Python cache
 __pycache__/
-
-config/
 
 # IDE
 .idea/
+
+# Models and Data
+./models/
+./data/
