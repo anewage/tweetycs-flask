@@ -8,5 +8,5 @@ __pycache__/
 .idea/
 
 # Models and Data
-./models/
-./data/
+models/
+data/
