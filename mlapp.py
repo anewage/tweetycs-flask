@@ -27,7 +27,7 @@ def SVMtweet():
 
 @app.route('/svmuser', methods=['GET', 'POST'])
 def SVMuser():
-    model = open("SVMUserOnly.pickle", "rb")
+    model = open("models/SVMUserOnly.pickle", "rb")
     clf = pickle.load(model)
     data = request.get_json(force=True)
     df = pd.DataFrame.from_dict(json_normalize(data))
@@ -41,7 +41,7 @@ def SVMuser():
 
 @app.route('/knnuser', methods=['GET', 'POST'])
 def KNNuser():
-    model = open("KNNUserOnly.pickle", "rb")
+    model = open("models/KNNUserOnly.pickle", "rb")
     clf = pickle.load(model)
     # modify it for the data stream
     data = request.get_json(force=True)
@@ -56,7 +56,7 @@ def KNNuser():
 
 @app.route('/knntweet', methods=['GET', 'POST'])
 def KNNtweet():
-    model = open("KNNTweetOnly.pickle", "rb")
+    model = open("models/KNNTweetOnly.pickle", "rb")
     clf = pickle.load(model)
     data = request.get_json(force=True)
     df = pd.DataFrame.from_dict(json_normalize(data))
@@ -72,7 +72,7 @@ def KNNtweet():
 
 @app.route('/rfuser', methods=['GET', 'POST'])
 def RFuser():
-    model = open("RFUserOnly.pickle", "rb")
+    model = open("models/RFUserOnly.pickle", "rb")
     clf = pickle.load(model)
     # modify it for the data stream
     data = request.get_json(force=True)
@@ -87,7 +87,7 @@ def RFuser():
 
 @app.route('/rftweet', methods=['GET', 'POST'])
 def RFtweet():
-    model = open("RFTweetOnly.pickle", "rb")
+    model = open("models/RFTweetOnly.pickle", "rb")
     clf = pickle.load(model)
     data = request.get_json(force=True)
     df = pd.DataFrame.from_dict(json_normalize(data))
@@ -103,7 +103,7 @@ def RFtweet():
 
 @app.route('/mlpuser', methods=['GET', 'POST'])
 def MLPuser():
-    model = open("MLPUserOnly.pickle", "rb")
+    model = open("models/MLPUserOnly.pickle", "rb")
     clf = pickle.load(model)
     # modify it for the data stream
     data = request.get_json(force=True)
@@ -118,7 +118,7 @@ def MLPuser():
 
 @app.route('/mlptweet', methods=['GET', 'POST'])
 def MLPtweet():
-    model = open("MLPTweetOnly.pickle", "rb")
+    model = open("models/MLPTweetOnly.pickle", "rb")
     clf = pickle.load(model)
     data = request.get_json(force=True)
     df = pd.DataFrame.from_dict(json_normalize(data))

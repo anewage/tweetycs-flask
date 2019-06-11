@@ -86,7 +86,7 @@ def top_n_words(tweetm, n, shift=0):
 app = Flask(__name__)
 
 vocab_size = 90000
-mDataFrame = pd.read_csv("test1.csv").fillna('')
+mDataFrame = pd.read_csv("data/test1.csv").fillna('')
 userdescription = mDataFrame['user_description']
 tweett = mDataFrame['tweet']
 vocabu = top_n_words(userdescription, vocab_size, shift=1)
@@ -97,7 +97,7 @@ vocabt = top_n_words(tweett, vocab_size, shift=1)
 def CNNuser():
     keras.backend.clear_session()
     max_length = 40
-    model = load_model("4cnnUser.hdf5")
+    model = load_model("models/4cnnUser.hdf5")
 
     # modify it for the data stream
     data = request.get_json(force=True)
@@ -116,7 +116,7 @@ def CNNuser():
 @app.route('/cnntweet', methods=['GET', 'POST'])
 def CNNtweet():
     keras.backend.clear_session()
-    model = load_model("4cnnTweet.hdf5")
+    model = load_model("models/4cnnTweet.hdf5")
     max_length = 140
     # modify it for the data stream
     data = request.get_json(force=True)
@@ -136,7 +136,7 @@ def CNNtweet():
 def LSTMuser():
     keras.backend.clear_session()
     max_length = 40
-    model = load_model("LstmUser.hdf5")
+    model = load_model("models/LstmUser.hdf5")
 
     # modify it for the data stream
     data = request.get_json(force=True)
@@ -156,7 +156,7 @@ def LSTMuser():
 def lstmtweet():
     keras.backend.clear_session()
     max_length = 140
-    model = load_model("LstmTweet.hdf5")
+    model = load_model("models/LstmTweet.hdf5")
 
     # modify it for the data stream
     data = request.get_json(force=True)
