@@ -1,16 +1,10 @@
 # tweetycs-flask
 
-## Starting
-After installing all the dependencies, create a JSON file in `config` folder and include the details of Twitter API:    
+## Install
 ```bash
-echo "{
-    \"consumer_key\": \"SOMETHING\",
-    \"consumer_secret\": \"SOMETHING\",
-    \"access_token\": \"SOMETHING\",
-    \"access_token_secret\": \"SOMETHING\"
-}" >> config/config.json
+pip install -r requirements.txt
 ```
-Now Simply run the `app.py` file:
+## Starting    
 ```bash
-python app.py
+python dlapp.py && python mlapp.py
 ```
