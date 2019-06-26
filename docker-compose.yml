@@ -1,0 +1,8 @@
+version: "3"
+services:
+  ml_app:
+    build: .
+    expose: 33508
+    environment:
+    network_mode: 'bridge'
+    restart: always

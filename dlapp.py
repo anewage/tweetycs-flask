@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import request,jsonify
-import pandas as pd 
-import numpy as np 
+import pandas as pd
+import numpy as np
 import pickle
 from helperClasses import *
 import numpy as np
@@ -18,7 +18,7 @@ import tensorflow as  tf
 import keras
 import os
 
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
+# os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 
 def load_lstmUsermodel():
