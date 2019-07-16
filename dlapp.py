@@ -18,7 +18,7 @@ import tensorflow as  tf
 import keras
 import os
 
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
+#os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 
 def load_lstmUsermodel():

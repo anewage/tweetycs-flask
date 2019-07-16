@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 def load_svmTweetmodel():
 	global clfST
-	model = open("models/SVMTweetOnly.pickle","rb")
+	model = open("models/SVMtweetOnly.pickle","rb")
 	clfST = pickle.load(model)
 
 def load_svmUsermodel():
@@ -23,7 +23,7 @@ def load_svmUsermodel():
 
 def load_knnTweetmodel():
 	global clfKT
-	model = open("models/KNNTweetOnly.pickle","rb")
+	model = open("models/KNNtweetOnly.pickle","rb")
 	clfKT = pickle.load(model)
 
 def load_knnUsermodel():
@@ -33,7 +33,7 @@ def load_knnUsermodel():
 
 def load_rfTweetmodel():
 	global clfRT
-	model = open("models/RFTweetOnly.pickle","rb")
+	model = open("models/RFtweetOnly.pickle","rb")
 	clfRT= pickle.load(model)
 
 def load_rfUsermodel():
@@ -43,7 +43,7 @@ def load_rfUsermodel():
 
 def load_mlpTweetmodel():
 	global clfMT
-	model = open("models/MLPTweetOnly.pickle","rb")
+	model = open("models/MLPtweetOnly.pickle","rb")
 	clfMT= pickle.load(model)
 
 def load_mlpUsermodel():

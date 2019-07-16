@@ -20,4 +20,5 @@ unzip models.zip
 
 echo "Done unzipping!"
 echo "Starting the flask application"
+cd ../
 python mlapp.py; python dlapp.py
