@@ -381,7 +381,11 @@ def lstmtweet():
             result=result[0]
             return jsonify(theme=result)
 
+@app.route('/test', methods=['GET','POST'])
+def test_hello():
+    return "HELLO"
 
+print(__name__)
 if __name__ == '__main__':
     load_svmTweetmodel()
     load_svmUsermodel()
